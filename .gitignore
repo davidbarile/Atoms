@@ -8,7 +8,7 @@
 Temp/*
 Library/*
 Build/*
-Skippy.keystore
+*.keystore
 Assembly-CSharp-vs.csproj
 Assembly-CSharp.csproj
 Assembly-CSharp.pidb
