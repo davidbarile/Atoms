@@ -6,22 +6,12 @@ public class Core : MonoBehaviour
 	[HideInInspector]
 	public Atom Atom = null;
 	public int MaxHealth;
-	public string Index = "core";
 	public int Health = 0;
-	//public float Radius;
-	public Color CoreColor;
 	
-	// Use this for initialization
-	void Awake () 
+	public void Init( int inHealth )
 	{
-		//gameObject.SetActive( false );
-		Debug.Log ( "Core.awake()" );
-	}
-	
-	// Update is called once per frame
-	void Update () 
-	{
-	
+		MaxHealth = inHealth;
+		Health = inHealth;
 	}
 	
 	public void TakeDamage( Pellet inPellet )

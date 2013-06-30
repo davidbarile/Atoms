@@ -5,13 +5,9 @@ public class GameManager : MonoBehaviour
 {
 	public Player Player = null;
 	
-	[SerializeField]
-	private Atom _atomTemplate = null;
-	
 	void Awake()
 	{
 		Debug.Log( "GAME MANAGER Awake()  this = " + this );
-		_atomTemplate.gameObject.SetActive( false );
 	}
 	
 	// Use this for initialization
@@ -20,7 +16,8 @@ public class GameManager : MonoBehaviour
 		Debug.Log( "GAME MANAGER Start()  this = " + this );
 		
 		//spawn player
-		Player = GameObject.Instantiate( Resources.Load( "Player" ) ) as Player;
+		Player = GameObject.Instantiate( Player ) as Player;
+		Player.gameObject.SetActive( true );
 	}
 	
 	// Update is called once per frame

@@ -1,32 +1,30 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class Atom : MonoBehaviour 
+enum Direction
 {
-	//public int Index = 0;
+	Clockwise = 1,
+	Counterclockwise = -1
+}
+
+public class Atom : MonoBehaviour
+{
+	public enum Role
+	{
+		Player,
+		Enemy
+	}
+	
 	public string Name;
-	public string Type;
-	public int Health;
+	public Role Owner;
 	public bool IsAlive = true;
 	public Core Core = null;
-	public int NumShells;
-	public int NumShellsRemaining;
 	public List< Shell > Shells = new List< Shell >();
-	public int NumBricks;
-	public int NumBricksRemaining;
 	
-	//public float mXpos;
-	//public float mYpos;
 	public float SelectedBrickAngle;
-	//public float ThrustDirection = 0;//is not .rotation
 	public bool IsThrusting = false;
 	public float Speed = 200;
 	public float MaxSpeed = 20;
-	//public float mAccellerationRate = .5;
-	//public float mFriction = .98;
-	//public float mRadius;
-	//public float mMass;
-	//public float mElasticity = .05;
 	
 	[HideInInspector]
 	public Shell OuterMostShell = null;
@@ -36,61 +34,25 @@ public class Atom : MonoBehaviour
 	
 	[HideInInspector]
 	public Brick SelectedBrick = null;
-		
-	// Use this for initialization
-	void Start () 
-	{
-		Debug.Log ( "ATOM.Start()   this = " + this );
-	}
 	
-	// Update is called once per frame
-	void Update () 
-	{
-		
-	}
-	
-	public void Init( string inName, string inType, object[] inCore, List<object[]> inShells )
+	public void Init( string inName, Role inOwner, Core inCore, List< Shell > inShells )
 	{
 		Debug.Log ( "ATOM.Init()" );
 		Name = inName;
-		Type = inType;
-		
-		//instantate Core dynamically
-		GameObject go = GameObject.Instantiate( Resources.Load( "Core" ) ) as GameObject;
-		Core Core = go.GetComponent<Core>() as Core;
-		
-		go.transform.parent = transform;//make Atom its parent
-		Core.Health = (int) inCore[ 0 ];
-		//Core.Radius = (int) inCore[ 1 ];
-		Core.CoreColor = (Color) inCore[ 2 ];
-		
-		NumShells = inShells.Count;
-		
-		Shell sh;
-		
-		//extract data from shells objects and pass into shell prefabs
-		for( int i = 0; i < NumShells; ++i )
+		Owner = inOwner;
+		Shells = inShells;
+		for( int i = 0; i < inShells.Count; ++i )
 		{
-			sh = transform.Find( "Shell" + ( i + 1 ) ).gameObject.GetComponent<Shell>() as Shell;
-			//sh.gameObject.SetActive( true );
-			
-			//object[] shellData = inShells[ i ] as Object[];//doesn't work
-			sh.LayerNum = (int) inShells[ i ][ 0 ];
-			sh.NumBricks = (int) inShells[ i ][ 1 ];
-			sh.BrickValue = (int) inShells[ i ][ 2 ];
-			sh.ShellColor = (Color) inShells[ i ][ 3 ];
-			sh.Init();
-			
-			//Debug.Log ( "ATOM.sh = " + sh );
-			Shells.Add ( sh );//add to array
+			inShells[ i ].transform.parent = this.transform;
 		}
+		Core = inCore;
+		inCore.transform.parent = transform;
 		
-		SelectedShell = Shells[ NumShells - 1 ];
+		SelectedShell = Shells[ Shells.Count - 1 ];
 		SelectedBrick = SelectedShell.Bricks[ 0 ];
 		SelectedBrick.Select();
 			
 		Debug.Log ( "SelectedBrick = " + SelectedBrick );
-		//Debug.Log ( "ATOM.init()   NumShells = " + NumShells );
 	}
 	
 	public void CycleLeft()
@@ -98,7 +60,7 @@ public class Atom : MonoBehaviour
 		//rotation -= SelectedBrick.BrickAngle;
 		transform.Rotate( 0, -1, 0, Space.Self );
 		
-		if( NumBricksRemaining > 0 )
+		//if( NumBricksRemaining > 0 )
 		{
 			SelectedBrick.Deselect();
 			
@@ -106,7 +68,7 @@ public class Atom : MonoBehaviour
 			
 			SelectedBrick.Select();
 			
-			SelectedBrickAngle = SelectedBrick.BrickAngle;
+			//SelectedBrickAngle = SelectedBrick.BrickAngle;
 			
 			//trace( "ATOM.AimAngle = " + AimAngle );
 			
@@ -115,29 +77,23 @@ public class Atom : MonoBehaviour
 			//Core.mRayImage.rotation = SelectedBrickAngle;
 			//Core.mPointerImage.rotation = SelectedBrickAngle;
 		}
-		else
-		{
-			//SelectedBrickAngle -= Const.NINE_RAD;
-			//reduceAngleValue( SelectedBrickAngle );
-			//RotateLeft();
-		}
 		
 	}
 	
 	public void CycleRight()
 	{
-		if( NumBricksRemaining > 0 )
+		//if( NumBricksRemaining > 0 )
 		{
 			//rotation += SelectedBrick.BrickAngle;
 			transform.Rotate( 0, 1, 0, Space.Self );
 			
 			SelectedBrick.Deselect();
 			
-			SelectedBrick = selectNextBrick( 1 );
+			SelectedBrick = selectNextBrick( Direction.Clockwise );
 			
 			SelectedBrick.Select();
 			
-			SelectedBrickAngle = SelectedBrick.BrickAngle;
+		//	SelectedBrickAngle = SelectedBrick.BrickAngle;
 			
 			//trace( "ATOM.AimAngle = " + AimAngle );
 			
@@ -145,12 +101,6 @@ public class Atom : MonoBehaviour
 			//ThrustDirection = reduceAngleValue( rotation + SelectedBrickAngle );
 			//Core.mRayImage.rotation = SelectedBrickAngle;
 			//Core.mPointerImage.rotation = SelectedBrickAngle;
-		}
-		else
-		{
-			//SelectedBrickAngle += Const.NINE_RAD;
-			//reduceAngleValue( SelectedBrickAngle );
-			//RotateRight();
 		}
 	}
 	
@@ -206,7 +156,7 @@ public class Atom : MonoBehaviour
 	{
 		Debug.Log( "Atom.Shoot( " + inDirection + " )      this = " + this );
 		
-		if( NumBricksRemaining > 0 )
+		//if( NumBricksRemaining > 0 )
 		{
 			Brick oldSelectedBrick = SelectedBrick;//store in local var to remove after next brick calculated
 			SelectedBrick.Shoot();
@@ -254,11 +204,24 @@ public class Atom : MonoBehaviour
 		//delete this;
 	}
 	
-	private Brick selectNextBrick( int inDirection )
+	private Brick selectNextBrick( Direction inDirection )
 	{
-		int nextBrickNum = SelectedBrick.Index + inDirection;
-		Brick nextBrick = SelectedShell.Bricks[ nextBrickNum ];
-		Debug.Log ( "selectNextBrick( direction = " + inDirection + " )    nextBrickNum = " + nextBrickNum + "   nextBrick = " + nextBrick );
-		return nextBrick;
+		int newIndex = SelectedShell.SelectedBrickIndex + ( int ) inDirection;
+		if( newIndex < 0 )
+		{
+			newIndex = SelectedShell.Bricks.Count - 1;
+		}
+		else if( newIndex > SelectedShell.Bricks.Count )
+		{
+			newIndex = 0;	
+		}
+		
+		if( !SelectedShell.Bricks[ newIndex ].IsActive )
+		{
+			// try to go outer shell first, then inner shell
+		}
+		
+		Debug.LogError( "Fix me" );
+		return null;
 	}
 }

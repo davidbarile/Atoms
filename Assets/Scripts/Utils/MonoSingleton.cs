@@ -62,3 +62,11 @@ public abstract class MonoSingleton< T > : MonoBehaviour where T : MonoSingleton
     private static T _Instance = null;
 	private bool _ShouldAddToDynamicObjects = true;
 } 
+
+public sealed class Singleton<T> where T : class, new()
+{
+        /// <summary>
+        /// Singleton implementation, readonly and static ensure thread safeness.
+        /// </summary>
+        public static readonly T Instance = new T ();
+}

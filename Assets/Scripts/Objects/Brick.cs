@@ -1,66 +1,50 @@
 using UnityEngine;
 using System.Collections;
 
-public class Brick : MonoBehaviour 
+public class Brick : MonoBehaviour
 {
-	[HideInInspector]
-	public Atom Atom = null;
-	[HideInInspector]
-	public Shell Shell = null;
-	public int Index;
-	public float BrickAngle;
 	public float WedgeWidth;
 	public float WedgeLeft;
 	public float WedgeRight;
-	public int NumBricks;
 	public int ShellLayerNum;
-	public int BrickValue;
+	public int Value;
 	public int BrickPointsRemaining;
-	public float ShellRadius;
 	public Color BrickColor;
 	
-	public bool IsSelected = false;
-	private Pellet _pellet = null;
-	
-	// Use this for initialization
-	void Awake () 
+	public void Init( int inValue )
 	{
-		gameObject.SetActive( false );
-		//Debug.Log ( ">>>>>>> BRICK   this = " + this );
+		Value = inValue;
 	}
 	
-	void Start () 
+	public bool IsActive
 	{
-		//gameObject.SetActive( false );
-		//Debug.Log ( ">>>>>>> BRICK   this = " + this );
+		get
+		{
+			return _IsActive;
+		}
+		set
+		{
+			_IsActive = value;
+			gameObject.SetActive( value );
+		}
 	}
 	
-	// Update is called once per frame
-	void Update () 
-	{
-	
-	}
-	
-	public void PositionBrick()
+	public void PositionBrick( int inIndex, int inCount )
 	{
 		//rotate brick prefab
-		BrickAngle =  (float) Index / (float) NumBricks * 360;
-		TransformExtensionMethods.SetLocalRotationY( gameObject.transform, BrickAngle );
+		float brickAngle =  (float) inIndex / inCount * 360;
+		TransformExtensionMethods.SetLocalRotationY( gameObject.transform, brickAngle );
 	}
 	
 	public void Select()
 	{
-		Debug.Log ( "Select()   Brick#" + Index );
-		IsSelected = true;
-		
 		Renderer renderer = GetComponentInChildren< Renderer >();
+		BrickColor = renderer.material.color;
 		renderer.material.color = Color.blue;
 	}
 	
 	public void Deselect()
 	{
-		IsSelected = false;
-		
 		Renderer renderer = GetComponentInChildren< Renderer >();
 		renderer.material.color = BrickColor;
 	}
@@ -78,7 +62,8 @@ public class Brick : MonoBehaviour
 		
 		//instantate new brick
 		GameObject go = GameObject.Instantiate( Resources.Load( "Pellet" ) ) as GameObject;
-		_pellet = go.GetComponent<Pellet>();
+		Pellet pellet = go.GetComponent<Pellet>();
+		pellet.Spawn( Value );
 		go.SetActive( true );
 		
 		//make it so pellet does not hit its own atom
@@ -87,11 +72,10 @@ public class Brick : MonoBehaviour
 		//Physics.IgnoreLayerCollision;
 		
 		//add data to pellet
-		_pellet.Index = Index;
 		
-		_pellet.transform.position = transform.position;
-		_pellet.transform.rotation = transform.rotation;
-		_pellet.rigidbody.AddRelativeForce( Vector3.forward * 50 );//ForceMode.Acceleration
+		pellet.transform.position = transform.position;
+		pellet.transform.rotation = transform.rotation;
+		pellet.rigidbody.AddRelativeForce( Vector3.forward * 50 );//ForceMode.Acceleration
 		
 		MeshRenderer loc = gameObject.GetComponent<MeshRenderer>() as MeshRenderer;
 		Debug.Log ( "LOC = " + loc );//WHAT TYPE IS THIS REALLY?  HOW DO I GET ITS POSITION?
@@ -103,42 +87,23 @@ public class Brick : MonoBehaviour
 	
 	public void RemoveBrick()
 	{
-		//Debug.Log( "removeBrick()   remaining = " + mAtom.NumBricksRemaining );
-		IsSelected = false;
-		
-		gameObject.SetActive( false );
-		
-		--Shell.NumBricksRemaining;
-		--Atom.NumBricksRemaining;
-		
-		if( Shell.NumBricksRemaining == 0 )
-		{
-			Debug.Log( "--- removeShell() # " + Shell.LayerNum );
-			Shell.RemoveShell();
-		}
+		IsActive = false;
 	}
 	
 	public void TakeDamage( Pellet inPellet )
 	{
-		Debug.Log( "Brick.TakeDamage()  id = " + inPellet.Brick.Index );
 		//optimize by just sending pelletValue instead of entire object
-		int pelletValue = inPellet.PelletValue;
 		int brickValue = BrickPointsRemaining;
 		
 		//Debug.Log( "takeDamage()  pellet = " + pelletValue + "   brick = " + brickValue );
 		
-		BrickPointsRemaining -= pelletValue;
-		inPellet.PelletValue -= brickValue;
+		BrickPointsRemaining -= inPellet.Value;;
+		inPellet.Value -= brickValue;
 		
 		//Debug.Log( "    HIT   pellet  = " + inPellet.PelletValue + "    brick = " + BrickValue );
 		
 		if( BrickPointsRemaining <= 0 )
 		{
-			if( IsSelected )
-			{
-				//select brick to right or left
-				
-			}
 			//play sound
 			//SFX.playSound( SFX.ByeewDown );
 			
@@ -153,4 +118,6 @@ public class Brick : MonoBehaviour
 			//alpha = BrickPointsRemaining / BrickValue;
 		}
 	}
+	
+	private bool _IsActive;
 }
