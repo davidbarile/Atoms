@@ -19,10 +19,4 @@ public class GameManager : MonoBehaviour
 		Player = GameObject.Instantiate( Player ) as Player;
 		Player.gameObject.SetActive( true );
 	}
-	
-	// Update is called once per frame
-	void Update () 
-	{
-	
-	}
 }

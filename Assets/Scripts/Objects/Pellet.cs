@@ -12,4 +12,19 @@ public class Pellet : MonoBehaviour
 		Value = inValue;
 		Mass = Mathf.PI * Radius * Radius * Value * 5;//tweak this if desired
 	}
+	
+	[SerializeField]
+	private GameObject _PelletPlane1 = null;
+	
+	[SerializeField]
+	private GameObject _PelletPlane2 = null;
+	
+	[SerializeField]
+	private GameObject _PelletPlane3 = null;
+	
+	[SerializeField]
+	private GameObject _PelletPlane4 = null;
+	
+	[SerializeField]
+	private GameObject _PelletPlane5 = null;
 }
