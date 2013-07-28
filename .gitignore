@@ -15,6 +15,7 @@ Assembly-CSharp.pidb
 Atoms-csharp.sln
 Atoms.sln
 .DS_Store
+Icon
 
 #Un-ignore these specific files
 !Library/*.asset
