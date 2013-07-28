@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-enum Direction
+public enum Direction
 {
 	Clockwise = 1,
 	Counterclockwise = -1
@@ -32,8 +32,20 @@ public class Atom : MonoBehaviour
 	[HideInInspector]
 	public Shell SelectedShell = null;
 	
-	[HideInInspector]
-	public Brick SelectedBrick = null;
+	public Brick SelectedBrick
+	{
+		get
+		{
+			return _SelectedBrick;
+		}
+		set
+		{
+			_SelectedBrick = value;
+			_SelectedBrick.Select();
+		}
+	}
+	
+	private Brick _SelectedBrick;
 	
 	public void Init( string inName, Role inOwner, Core inCore, List< Shell > inShells )
 	{
@@ -50,68 +62,63 @@ public class Atom : MonoBehaviour
 		
 		SelectedShell = Shells[ Shells.Count - 1 ];
 		SelectedBrick = SelectedShell.Bricks[ 0 ];
-		SelectedBrick.Select();
 			
 		Debug.Log ( "SelectedBrick = " + SelectedBrick );
 	}
 	
-	public void CycleLeft()
+	public void CycleClockwise()
 	{
-		//rotation -= SelectedBrick.BrickAngle;
-		transform.Rotate( 0, -1, 0, Space.Self );
-		
-		//if( NumBricksRemaining > 0 )
+		Cycle( Direction.Clockwise );
+	}
+	
+	public void CycleCounterClockwise()
+	{
+		Cycle( Direction.Counterclockwise );
+	}
+	
+	public void Cycle( Direction inDirection )
+	{
+		float startAngle = SelectedShell.GetSelectedAngle( SelectedBrick, inDirection );
+		List< ArcLengthIndex > toCompare = new List<ArcLengthIndex>();
+		for( int i = Shells.Count - 1; i >= 1; --i )
 		{
-			SelectedBrick.Deselect();
-			
-			//SelectedBrick = selectNextBrick( -1 );
-			
-			SelectedBrick.Select();
-			
-			//SelectedBrickAngle = SelectedBrick.BrickAngle;
-			
-			//trace( "ATOM.AimAngle = " + AimAngle );
-			
-			//trace( "ATOM.cycleLeft()    this = " + this.rotation );
-			//ThrustDirection = reduceAngleValue( rotation + SelectedBrickAngle );
-			//Core.mRayImage.rotation = SelectedBrickAngle;
-			//Core.mPointerImage.rotation = SelectedBrickAngle;
+			toCompare.Add( Shells[ i ].GetNearestBrickIndex( inDirection, startAngle ) );
 		}
 		
-	}
-	
-	public void CycleRight()
-	{
-		//if( NumBricksRemaining > 0 )
+		for( int i = 0; i < toCompare.Count - 1; ++i )
 		{
-			//rotation += SelectedBrick.BrickAngle;
-			transform.Rotate( 0, 1, 0, Space.Self );
+			var outer = toCompare[ i ];
+			var inner = toCompare[ i + 1 ];
 			
-			SelectedBrick.Deselect();
-			
-			SelectedBrick = selectNextBrick( Direction.Clockwise );
-			
-			SelectedBrick.Select();
-			
-		//	SelectedBrickAngle = SelectedBrick.BrickAngle;
-			
-			//trace( "ATOM.AimAngle = " + AimAngle );
-			
-			//trace( "ATOM.cycleRight()    this = " + this.rotation );
-			//ThrustDirection = reduceAngleValue( rotation + SelectedBrickAngle );
-			//Core.mRayImage.rotation = SelectedBrickAngle;
-			//Core.mPointerImage.rotation = SelectedBrickAngle;
+			if( i == 0 && outer.angle < inner.angle )
+			{
+				SelectedShell = OuterMostShell;
+				SelectedBrick = OuterMostShell.Bricks[ outer.index ];
+				return;
+			}
+			else if( outer.angle < inner.angle )
+			{
+				// test if outer can be shot, if not then continue
+				bool canBeShot = false;
+				if( canBeShot )
+				{
+					return;
+				}
+			}
 		}
-	}
-	
-	public void RotateLeft()
-	{	
-		rigidbody.AddTorque ( Vector3.up * -1f );
-	}
-	
-	public void RotateRight()
-	{	
-		rigidbody.AddTorque ( Vector3.up * 1f );
+		
+		var innerMostResult = toCompare[ toCompare.Count - 1 ];
+		bool canShootInnerMost = false;
+		if( canShootInnerMost )
+		{
+			SelectedShell = Shells[ 0 ];
+			SelectedBrick = SelectedShell.Bricks[ innerMostResult.index ];
+		}
+		else
+		{
+			SelectedShell = OuterMostShell;
+			SelectedBrick = OuterMostShell.Bricks[ toCompare[ 0 ].index ];
+		}
 	}
 	
 	public void Thrust()
@@ -165,11 +172,11 @@ public class Atom : MonoBehaviour
 			
 			if( inDirection == "right" )
 			{
-				CycleRight();
+				CycleCounterClockwise();
 			}
 			else
 			{
-				CycleLeft();
+				CycleClockwise();
 			}
 			
 			//now remove old brick

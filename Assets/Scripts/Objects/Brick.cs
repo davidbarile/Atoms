@@ -29,18 +29,16 @@ public class Brick : MonoBehaviour
 		}
 	}
 	
-	public void PositionBrick( int inIndex, int inCount )
+	public void PositionBrick( float inAngle )
 	{
-		//rotate brick prefab
-		float brickAngle =  (float) inIndex / inCount * 360;
-		TransformExtensionMethods.SetLocalRotationY( gameObject.transform, brickAngle );
+		TransformExtensionMethods.SetLocalRotationY( gameObject.transform, inAngle );
 	}
 	
 	public void Select()
 	{
-		Renderer renderer = GetComponentInChildren< Renderer >();
-		BrickColor = renderer.material.color;
-		renderer.material.color = Color.blue;
+		//Renderer renderer = GetComponentInChildren< Renderer >();
+		//BrickColor = renderer.material.color;
+		//renderer.material.color = Color.blue;
 	}
 	
 	public void Deselect()

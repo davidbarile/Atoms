@@ -49,25 +49,25 @@ public class Player : MonoBehaviour
 	public void CycleLeft()
 	{
 		Debug.Log( "CycleLeft()      this = " + this );
-		ActiveAtom.CycleLeft();
+		ActiveAtom.CycleClockwise();
 	}
 	
 	public void CycleRight()
 	{
 		Debug.Log( "CycleRight()      this = " + this );
-		ActiveAtom.CycleRight();
+		ActiveAtom.CycleCounterClockwise();
 	}
 	
 	public void RotateLeft()
 	{
 		Debug.Log( "RotateLeft()      this = " + this );
-		ActiveAtom.RotateLeft();
+		ActiveAtom.CycleClockwise();
 	}
 	
 	public void RotateRight()
 	{
 		Debug.Log( "RotateRight()      this = " + this );
-		ActiveAtom.RotateRight();
+		ActiveAtom.CycleCounterClockwise();
 	}
 	
 	public void Thrust()
